@@ -9,7 +9,8 @@ cd /tmp
 
 mkdir -p build && cd build
 MOD_PREFIX=$PWD/install
-CXXFLAGS="-Wall -Wextra -Werror -D_GLIBCXX_ASSERTIONS" ${ARCH}-w64-mingw32-cmake -DUSE_SPHINX=OFF -DUSE_SALOME=OFF \
+LDFLAGS="-no-pie" CXXFLAGS="-Wall -Wextra -Werror -D_GLIBCXX_ASSERTIONS -fno-pie -fno-pic -g -fno-inline" ${ARCH}-w64-mingw32-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF \
+  -DUSE_SPHINX=OFF -DUSE_SALOME=OFF \
   -DCMAKE_INSTALL_PREFIX=${MOD_PREFIX} \
   -DPYTHON_INCLUDE_DIR=${MINGW_PREFIX}/include/python${PYMAJMIN} \
   -DPYTHON_LIBRARY=${MINGW_PREFIX}/lib/libpython${PYMAJMIN}.dll.a \
@@ -18,10 +19,10 @@ CXXFLAGS="-Wall -Wextra -Werror -D_GLIBCXX_ASSERTIONS" ${ARCH}-w64-mingw32-cmake
   -DSWIG_COMPILE_FLAGS="-Wno-error=unused-parameter" \
   -DCMAKE_UNITY_BUILD=ON -DCMAKE_UNITY_BUILD_BATCH_SIZE=32 /io
 make install
-${ARCH}-w64-mingw32-strip --strip-unneeded ${MOD_PREFIX}/bin/*.dll ${MOD_PREFIX}/Lib/site-packages/persalys/*.pyd
-make tests
+# ${ARCH}-w64-mingw32-strip --strip-unneeded ${MOD_PREFIX}/bin/*.dll ${MOD_PREFIX}/Lib/site-packages/persalys/*.pyd
 cp ${MINGW_PREFIX}/bin/*.dll ${MOD_PREFIX}/bin
-WINEPATH="${MINGW_PREFIX}/bin;${MOD_PREFIX}/bin" xvfb-run -s "-screen 0 1024x768x24" ctest --output-on-failure --timeout 100 -j8
+# make tests
+# WINEPATH="${MINGW_PREFIX}/bin;${MOD_PREFIX}/bin" xvfb-run -s "-screen 0 1024x768x24" ctest --output-on-failure --timeout 100 -j8
 
 # module installer
 cp -r ${MINGW_PREFIX}/lib/qt/plugins/{platforms,imageformats} ${MOD_PREFIX}/lib

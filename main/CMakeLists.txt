@@ -14,8 +14,16 @@ else ()
   add_executable (persalys WIN32 main.cxx gui.rc)
 endif ()
 
-target_link_libraries (persalys persalysview)
 set_target_properties (persalys PROPERTIES UNITY_BUILD OFF)
+target_link_libraries (persalys PRIVATE persalysview)
+
+if (UNIX)
+  target_compile_definitions(persalys PRIVATE BOOST_STACKTRACE_USE_ADDR2LINE)
+  target_link_libraries(persalys PRIVATE dl)
+elseif(WIN32)
+  target_compile_definitions(persalys PRIVATE BOOST_STACKTRACE_USE_BACKTRACE)
+  target_link_libraries(persalys PRIVATE boost_stacktrace_backtrace backtrace)
+endif ()
 
 if (UNIX)
   set (launch_file ${CMAKE_BINARY_DIR}/persalys.sh)

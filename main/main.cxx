@@ -33,9 +33,24 @@
 
 using namespace PERSALYS;
 
+#include <signal.h>     // ::signal, ::raise
+#include <boost/stacktrace.hpp>
+
+void print_stacktrace(int signum) {
+  ::signal(signum, SIG_DFL);
+  std::cerr << "Stack trace:\n" << boost::stacktrace::stacktrace() << '\n';
+  std::ofstream ofs("./stacktrace.txt");
+  ofs << boost::stacktrace::stacktrace() << '\n';
+  ofs.close();
+  ::raise(SIGABRT);
+}
+
 int main(int argc, char *argv[])
 {
   int ret = 0;
+
+  ::signal(SIGSEGV, &print_stacktrace);
+  ::signal(SIGABRT, &print_stacktrace);
 
   // Python Environment
   PythonEnvironment env;
