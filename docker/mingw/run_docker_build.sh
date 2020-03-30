@@ -17,7 +17,7 @@ LDFLAGS="-no-pie" CXXFLAGS="-Wall -Wextra -Werror -D_GLIBCXX_ASSERTIONS -fno-pie
   -DPYTHON_EXECUTABLE=/usr/bin/${ARCH}-w64-mingw32-python${PYMAJMIN}-bin \
   -DPYTHON_SITE_PACKAGES=Lib/site-packages \
   -DSWIG_COMPILE_FLAGS="-Wno-error=unused-parameter" \
-  -DCMAKE_UNITY_BUILD=ON -DCMAKE_UNITY_BUILD_BATCH_SIZE=32 /io
+  -DCMAKE_UNITY_BUILD=ON -DCMAKE_UNITY_BUILD_BATCH_SIZE=16 /io
 make install
 # ${ARCH}-w64-mingw32-strip --strip-unneeded ${MOD_PREFIX}/bin/*.dll ${MOD_PREFIX}/Lib/site-packages/persalys/*.pyd
 cp ${MINGW_PREFIX}/bin/*.dll ${MOD_PREFIX}/bin
