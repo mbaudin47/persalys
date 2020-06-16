@@ -230,10 +230,19 @@ Sample Tools::ImportSample(const String& fileName)
   separatorsList[2] = ";";
   Sample sampleFromFile;
 
-  for (UnsignedInteger i = 0; i < separatorsList.size(); ++ i)
-  {
-    // import sample from the file
-    sampleFromFile = Sample::ImportFromTextFile(fileName, separatorsList[i]);
+  std::vector<String> numSep(2);
+  numSep[0] = ".";
+  numSep[1] = ",";
+
+  for (UnsignedInteger i = 0; i < separatorsList.size(); ++ i) {
+    for (UnsignedInteger j = 0; j < numSep.size(); ++ j) {
+      if (i == 1 && j == 1)
+        break;
+      // import sample from the file
+      sampleFromFile = Sample::ImportFromTextFile(fileName, separatorsList[i], 0, numSep[j]);
+      if (sampleFromFile.getSize())
+        break;
+    }
     if (sampleFromFile.getSize())
       break;
   }
