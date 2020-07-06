@@ -24,6 +24,7 @@
 
 #include <openturns/Study.hxx>
 #include <openturns/XMLStorageManager.hxx>
+#include <openturns/XMLH5StorageManager.hxx>
 #include <openturns/PersistentObjectFactory.hxx>
 #include <openturns/WeibullMin.hxx>
 #include <openturns/ThresholdEventImplementation.hxx>
@@ -153,6 +154,7 @@ Study Study::Open(const String & xmlFileName)
 {
   // open study
   OT::Study study;
+  //study.setStorageManager(XMLH5StorageManager(xmlFileName));
   study.setStorageManager(XMLStorageManager(xmlFileName));
   study.load();
   Study openedStudy;
