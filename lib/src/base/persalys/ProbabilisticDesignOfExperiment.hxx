@@ -36,7 +36,8 @@ public:
   ProbabilisticDesignOfExperiment(const OT::String& name,
                                   const PhysicalModel& physicalModel,
                                   const OT::UnsignedInteger size = OT::ResourceMap::GetAsUnsignedInteger("WeightedExperiment-DefaultSize"),
-                                  const OT::String& designName = "LHS");
+                                  const OT::String& designName = "LHS",
+                                  const OT::UnsignedInteger mcLhsSize = 1000);
 
 
   /** Virtual constructor */
@@ -51,6 +52,8 @@ public:
 
   OT::UnsignedInteger getSize() const;
   void setSize(const OT::UnsignedInteger size);
+
+  OT::UnsignedInteger getMCLHSSize() const;
 
   virtual Parameters getParameters() const;
   virtual OT::String getPythonScript() const;
@@ -72,6 +75,7 @@ protected:
 private:
   OT::String designName_;
   OT::UnsignedInteger size_;
+  OT::UnsignedInteger mcLhsSize_;
 };
 }
 #endif

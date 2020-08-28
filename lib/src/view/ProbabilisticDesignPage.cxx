@@ -28,6 +28,7 @@
 #include <QGroupBox>
 #include <QLabel>
 
+
 using namespace OT;
 
 namespace PERSALYS
@@ -53,16 +54,39 @@ void ProbabilisticDesignPage::buildInterface()
   QRadioButton * buttonToChooseDesign = new QRadioButton(tr("LHS"));
   buttonToChooseDesign->setToolTip(tr("Latin Hypercube Sampling"));
   buttonToChooseDesign->setChecked(true);
-  designsGroup_->addButton(buttonToChooseDesign, ProbabilisticDesignPage::LHS);
-  designGroupBoxLayout->addWidget(buttonToChooseDesign);
+
+  QLabel * cbLabel = new QLabel(tr("Optimisation algorithm"));
+  optimComboBox_ = new QComboBox;
+  optimComboBox_->addItem(tr("None"), ProbabilisticDesignPage::LHS);
+  optimComboBox_->addItem(tr("Simulated Annealing LHS"), ProbabilisticDesignPage::SALHS);
+  optimComboBox_->addItem(tr("Monte Carlo LHS"), ProbabilisticDesignPage::MCLHS);
+
+  designsGroup_->addButton(buttonToChooseDesign, optimComboBox_->currentIndex());
+  optimComboBox_->setCurrentIndex(designsGroup_->checkedId()>2 ? 0 : designsGroup_->checkedId());
+  designGroupBoxLayout->addWidget(buttonToChooseDesign, 0, 0);
+  designGroupBoxLayout->addWidget(cbLabel, 0, 1);
+  designGroupBoxLayout->addWidget(optimComboBox_, 0, 2);
+
+  mcLhsSizeSB_ = new LogSpinBox;
+  mcLhsSizeSB_->setValue(1000);
+  designGroupBoxLayout->addWidget( mcLhsSizeSB_, 1, 2);
+
+  connect(buttonToChooseDesign, &QRadioButton::toggled, [=](Bool enabled) {
+      optimComboBox_->setEnabled(enabled);
+      mcLhsSizeSB_->setEnabled(enabled);});
+
+  connect(optimComboBox_, QOverload<int>::of(&QComboBox::activated), [=](int index) {
+      designsGroup_->setId(buttonToChooseDesign,index);
+      mcLhsSizeSB_->setEnabled(index == 2);});
+
 
   buttonToChooseDesign = new QRadioButton(tr("Monte Carlo"));
   designsGroup_->addButton(buttonToChooseDesign, ProbabilisticDesignPage::MonteCarlo);
-  designGroupBoxLayout->addWidget(buttonToChooseDesign);
+  designGroupBoxLayout->addWidget(buttonToChooseDesign, 2, 0);
 
   buttonToChooseDesign = new QRadioButton(tr("Quasi-Monte Carlo"));
   designsGroup_->addButton(buttonToChooseDesign, ProbabilisticDesignPage::QuasiMonteCarlo);
-  designGroupBoxLayout->addWidget(buttonToChooseDesign);
+  designGroupBoxLayout->addWidget(buttonToChooseDesign, 3, 0);
 
   pageLayout->addWidget(designGroupBox);
 
@@ -140,8 +164,19 @@ void ProbabilisticDesignPage::initialize(const Analysis& analysis)
   if (!probaDoe_ptr)
     return;
 
-  if (probaDoe_ptr->getDesignName() == "LHS" && independentCopula)
+  if (probaDoe_ptr->getDesignName() == "LHS" && independentCopula) {
     designsGroup_->button(ProbabilisticDesignPage::LHS)->click();
+    optimComboBox_->setCurrentIndex(0);
+  }
+  else if (probaDoe_ptr->getDesignName() == "SALHS" && independentCopula) {
+    designsGroup_->button(ProbabilisticDesignPage::LHS)->click();
+    optimComboBox_->setCurrentIndex(1);
+  }
+  else if (probaDoe_ptr->getDesignName() == "MCLHS" && independentCopula) {
+    designsGroup_->button(ProbabilisticDesignPage::LHS)->click();
+    optimComboBox_->setCurrentIndex(2);
+    mcLhsSizeSB_->setValue(probaDoe_ptr->getMCLHSSize());
+  }
   else if (probaDoe_ptr->getDesignName() == "QUASI_MONTE_CARLO")
     designsGroup_->button(ProbabilisticDesignPage::QuasiMonteCarlo)->click();
   else
@@ -149,16 +184,21 @@ void ProbabilisticDesignPage::initialize(const Analysis& analysis)
 
   sampleSizeSpinbox_->setValue(probaDoe_ptr->getSize());
   seedSpinbox_->setValue(probaDoe_ptr->getSeed());
+  mcLhsSizeSB_->setEnabled(optimComboBox_->currentIndex()==2);
 }
 
 Analysis ProbabilisticDesignPage::getAnalysis(const String& name, const PhysicalModel& model) const
 {
   String designType = "LHS";
-  if (designsGroup_->checkedId() == ProbabilisticDesignPage::MonteCarlo)
+  if (designsGroup_->checkedId() == ProbabilisticDesignPage::SALHS)
+    designType = "SALHS";
+  else if (designsGroup_->checkedId() == ProbabilisticDesignPage::MCLHS)
+    designType = "MCLHS";
+  else if (designsGroup_->checkedId() == ProbabilisticDesignPage::MonteCarlo)
     designType = "MONTE_CARLO";
   else if (designsGroup_->checkedId() == ProbabilisticDesignPage::QuasiMonteCarlo)
     designType = "QUASI_MONTE_CARLO";
-  ProbabilisticDesignOfExperiment design(name, model, sampleSizeSpinbox_->value(), designType);
+  ProbabilisticDesignOfExperiment design(name, model, sampleSizeSpinbox_->value(), designType, mcLhsSizeSB_->isEnabled() ? mcLhsSizeSB_->value() : 0);
   design.setSeed(seedSpinbox_->value());
 
   return design;

@@ -26,6 +26,9 @@
 #include <openturns/LowDiscrepancyExperiment.hxx>
 #include <openturns/RandomGenerator.hxx>
 #include <openturns/PersistentObjectFactory.hxx>
+#include <openturns/SimulatedAnnealingLHS.hxx>
+#include <openturns/MonteCarloLHS.hxx>
+
 
 using namespace OT;
 
@@ -44,6 +47,8 @@ Description ProbabilisticDesignOfExperiment::GetDesignNames()
   {
     DesignNames_ = Description();
     DesignNames_.add("LHS");
+    DesignNames_.add("SALHS");
+    DesignNames_.add("MCLHS");
     DesignNames_.add("MONTE_CARLO");
     DesignNames_.add("QUASI_MONTE_CARLO");
   }
@@ -64,10 +69,11 @@ ProbabilisticDesignOfExperiment::ProbabilisticDesignOfExperiment()
 ProbabilisticDesignOfExperiment::ProbabilisticDesignOfExperiment(const String& name,
     const PhysicalModel& physicalModel,
     const UnsignedInteger size,
-    const String& designName)
+    const String& designName, const UnsignedInteger mcLhsSize)
   : DesignOfExperimentEvaluation(name, physicalModel)
   , designName_("")
   , size_(0)
+  , mcLhsSize_(mcLhsSize)
 {
   isDeterministicAnalysis_ = false;
   setDesignName(designName);
@@ -105,6 +111,10 @@ UnsignedInteger ProbabilisticDesignOfExperiment::getSize() const
   return size_;
 }
 
+UnsignedInteger ProbabilisticDesignOfExperiment::getMCLHSSize() const
+{
+  return mcLhsSize_;
+}
 
 void ProbabilisticDesignOfExperiment::setSize(const UnsignedInteger size)
 {
@@ -137,6 +147,10 @@ Sample ProbabilisticDesignOfExperiment::generateInputSample(const UnsignedIntege
 
   if (designName_ == "LHS")
     sample = LHSExperiment(getPhysicalModel().getDistribution(), size_).generate();
+  else if (designName_ == "SALHS")
+    sample = SimulatedAnnealingLHS(LHSExperiment(getPhysicalModel().getDistribution(), size_)).generate();
+  else if (designName_ == "MCLHS")
+    sample = MonteCarloLHS(LHSExperiment(getPhysicalModel().getDistribution(), size_), mcLhsSize_).generate();
   else if (designName_ == "MONTE_CARLO")
     sample = MonteCarloExperiment(getPhysicalModel().getDistribution(), size_).generate();
   else if (designName_ == "QUASI_MONTE_CARLO")
@@ -180,7 +194,11 @@ Parameters ProbabilisticDesignOfExperiment::getParameters() const
   Parameters param;
 
   String designName = "LHS";
-  if (getDesignName() == "MONTE_CARLO")
+  if (getDesignName() == "SALHS")
+    designName = "Simulated annealing LHS";
+  else if (getDesignName() == "MCLHS")
+    designName = "Monte Carlo LHS";
+  else if (getDesignName() == "MONTE_CARLO")
     designName = "Monte Carlo";
   else if (getDesignName() == "QUASI_MONTE_CARLO")
     designName = "Quasi-Monte Carlo";
@@ -230,6 +248,7 @@ void ProbabilisticDesignOfExperiment::save(Advocate& adv) const
   DesignOfExperimentEvaluation::save(adv);
   adv.saveAttribute("designName_", designName_);
   adv.saveAttribute("size_", size_);
+  adv.saveAttribute("mcLhsSize_", mcLhsSize_);
 }
 
 
@@ -239,5 +258,7 @@ void ProbabilisticDesignOfExperiment::load(Advocate& adv)
   DesignOfExperimentEvaluation::load(adv);
   adv.loadAttribute("designName_", designName_);
   adv.loadAttribute("size_", size_);
+  if(adv.hasAttribute("mcLhsSize_"))
+     adv.loadAttribute("mcLhsSize_", mcLhsSize_);
 }
 }
