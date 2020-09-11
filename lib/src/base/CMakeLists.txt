@@ -14,7 +14,7 @@ set(BASE_SOURCEFILES DistributionDictionary.cxx
                      MeshModel.cxx MeshModelImplementation.cxx
                      GridMeshModel.cxx
                      ImportedMeshModel.cxx
-                     PhysicalModel.cxx PhysicalModelImplementation.cxx SymbolicPhysicalModel.cxx 
+                     PhysicalModel.cxx PhysicalModelImplementation.cxx SymbolicPhysicalModel.cxx
                      PythonPhysicalModel.cxx
                      MetaModel.cxx
                      SymbolicFieldModel.cxx
@@ -75,6 +75,7 @@ set(BASE_SOURCEFILES DistributionDictionary.cxx
                      CouplingPhysicalModel.cxx
                      FileMemoizeEvaluation.cxx
                      FileMemoizeFunction.cxx
+                     DataCleaningTools.cxx
                      )
 if (SalomeYACS_FOUND)
   list (APPEND BASE_SOURCEFILES YACSPhysicalModel.cxx YACSEvaluation.cxx YACSCouplingPhysicalModel.cxx)
@@ -182,6 +183,7 @@ ot_install_header_file ( CouplingInputFile.hxx )
 ot_install_header_file ( CouplingResourceFile.hxx )
 ot_install_header_file ( CouplingOutputFile.hxx )
 ot_install_header_file ( CouplingStep.hxx )
+ot_install_header_file ( DataCleaningTools.hxx )
 
 if (OTFMI_FOUND)
   ot_install_header_file (FMIPhysicalModel.hxx)
@@ -206,10 +208,10 @@ if (BUILD_SHARED_LIBS)
   target_compile_definitions (persalysbase PRIVATE PERSALYS_BASE_DLL_EXPORTS)
 endif ()
 
-if ( NOT DEFINED LIB_VERSION ) 
+if ( NOT DEFINED LIB_VERSION )
   set ( LIB_VERSION 0.0.0 )
 endif ()
-if ( NOT DEFINED LIB_SOVERSION ) 
+if ( NOT DEFINED LIB_SOVERSION )
   set ( LIB_SOVERSION 0 )
 endif ()
 set_target_properties ( persalysbase PROPERTIES VERSION ${LIB_VERSION} )
@@ -243,4 +245,3 @@ install ( TARGETS persalysbase
   LIBRARY DESTINATION ${PERSALYS_LIBRARY_PATH}
   ARCHIVE DESTINATION ${PERSALYS_LIBRARY_PATH}
 )
-
